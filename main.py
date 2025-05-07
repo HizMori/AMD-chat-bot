@@ -2,6 +2,7 @@ import sys
 import requests
 import json
 import threading
+import markdown  # Добавляем библиотеку для обработки markdown
 from PyQt6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
                              QTextEdit, QLineEdit, QPushButton, QFrame, QLabel, QStatusBar)
 from PyQt6.QtCore import Qt
@@ -75,42 +76,65 @@ class ChatBotWindow(QMainWindow):
             return
 
         # Отображаем сообщение пользователя
-        self.chat_area.append(f"Вы: {message}")
+        self.chat_area.append(f"<b>Вы:</b> {message}")
         self.input_field.clear()
         self.status_bar.showMessage("Отправка запроса...")
 
         # Запускаем запрос к API в отдельном потоке
-        threading.Thread(target=self.get_deepseek_response, args=(message,)).start()
+        thread = threading.Thread(target=self.get_deepseek_response, args=(message,), daemon=True)
+        thread.start()
+
+    def format_response(self, text):
+        # Обработка специальных символов
+        text = text.replace("\\n", "<br>")  # Заменяем \n на перенос строки в HTML
+        text = text.replace("\\t", "    ")  # Заменяем \t на 4 пробела
+        text = text.strip()  # Удаляем лишние пробелы в начале и конце
+
+        # Преобразуем markdown в HTML
+        try:
+            html_text = markdown.markdown(text)
+            return html_text
+        except Exception as e:
+            print(f"Markdown conversion error: {e}")
+            return text  # Если markdown не сработал, возвращаем текст как есть
 
     def get_deepseek_response(self, message):
         # Добавляем сообщение в историю
         self.conversation_history.append({"role": "user", "content": message})
+        print(f"Conversation history: {self.conversation_history}")
 
         url = "https://openrouter.ai/api/v1/chat/completions"
         headers = {
-            "Authorization": "Bearer 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",  # Замените на ваш ключ OpenRouter
+            "Authorization": "Bearer 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",
             "Content-Type": "application/json",
-            "X-Title": "AMD ChatBot Support"  # Название вашего приложения (опционально)
+            "X-Title": "AMD ChatBot Support"
         }
         data = {
             "model": "tngtech/deepseek-r1t-chimera:free",
             "messages": self.conversation_history
         }
+        print(f"Sending request with data: {data}")
 
         try:
             response = requests.post(url, headers=headers, data=json.dumps(data), timeout=10)
-            print(response.text)
+            print(f"Raw response: {response.text}")
             response.raise_for_status()
             bot_response = response.json()["choices"][0]["message"]["content"]
+            print(f"Parsed response: {bot_response}")
+
+            # Форматируем ответ
+            formatted_response = self.format_response(bot_response)
 
             # Добавляем ответ бота в историю
             self.conversation_history.append({"role": "assistant", "content": bot_response})
 
-            # Отображаем ответ
-            self.chat_area.append(f"Чат-бот: {bot_response}")
+            # Отображаем отформатированный ответ
+            self.chat_area.append(f"<b>Чат-бот:</b>")
+            self.chat_area.insertHtml(formatted_response + "<br>")
             self.status_bar.showMessage("Подключено к DeepSeek API")
         except Exception as e:
-            self.chat_area.append(f"Ошибка: {str(e)}")
+            print(f"Exception occurred: {str(e)}")
+            self.chat_area.append(f"<b>Ошибка:</b> {str(e)}")
             self.status_bar.showMessage("Ошибка подключения")
 
 if __name__ == "__main__":
