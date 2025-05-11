@@ -3,9 +3,10 @@ import requests
 import json
 import threading
 import markdown
+import os
 from PyQt6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
                              QTextBrowser, QLineEdit, QPushButton, QFrame, QLabel, QStatusBar)
-from PyQt6.QtCore import Qt, pyqtSignal, pyqtSlot, QSize
+from PyQt6.QtCore import Qt, pyqtSignal, pyqtSlot, QSize, QDir
 from PyQt6.QtGui import QKeyEvent, QIcon
 
 class ChatBotWindow(QMainWindow):
@@ -16,6 +17,13 @@ class ChatBotWindow(QMainWindow):
         super().__init__()
         self.setWindowTitle("AMD ChatBot Support")
         self.setGeometry(100, 100, 800, 600)
+
+        # Установка кастомного значка приложения
+        icon_path = os.path.join(os.path.dirname(__file__), "app_icon.ico")
+        if os.path.exists(icon_path):
+            self.setWindowIcon(QIcon(icon_path))
+        else:
+            print(f"Файл значка {icon_path} не найден!")
 
         # Убираем стандартный заголовок
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint)
@@ -135,7 +143,11 @@ class ChatBotWindow(QMainWindow):
 
         # Кнопка с лупой
         search_button = QPushButton()
-        search_button.setIcon(QIcon("path/to/search_icon.png"))  # Замените на путь к иконке лупы (например, search_icon.png)
+        icon_path = os.path.join(os.path.dirname(__file__), "search_icon.png")
+        if os.path.exists(icon_path):
+            search_button.setIcon(QIcon(icon_path))
+        else:
+            print(f"Файл иконки лупы {icon_path} не найден!")
         search_button.setIconSize(QSize(16, 16))
         search_button.setStyleSheet("""
             QPushButton {
@@ -155,7 +167,11 @@ class ChatBotWindow(QMainWindow):
 
         # Кнопка ★ с серой иконкой
         star_button = QPushButton()
-        star_button.setIcon(QIcon("path/to/star_icon.png"))  # Замените на путь к серой иконке звезды
+        icon_path = os.path.join(os.path.dirname(__file__), "star_icon.png")
+        if os.path.exists(icon_path):
+            star_button.setIcon(QIcon(icon_path))
+        else:
+            print(f"Файл иконки звезды {icon_path} не найден!")
         star_button.setIconSize(QSize(16, 16))
         star_button.setStyleSheet("""
             QPushButton {
@@ -171,7 +187,11 @@ class ChatBotWindow(QMainWindow):
 
         # Кнопка 🔔 с серой иконкой
         bell_button = QPushButton()
-        bell_button.setIcon(QIcon("path/to/bell_icon.png"))  # Замените на путь к серой иконке колокольчика
+        icon_path = os.path.join(os.path.dirname(__file__), "bell_icon.png")
+        if os.path.exists(icon_path):
+            bell_button.setIcon(QIcon(icon_path))
+        else:
+            print(f"Файл иконки колокольчика {icon_path} не найден!")
         bell_button.setIconSize(QSize(16, 16))
         bell_button.setStyleSheet("""
             QPushButton {
@@ -187,7 +207,11 @@ class ChatBotWindow(QMainWindow):
 
         # Кнопка ⚙️ с серой иконкой
         settings_button = QPushButton()
-        settings_button.setIcon(QIcon("path/to/settings_icon.png"))  # Замените на путь к серой иконке настроек
+        icon_path = os.path.join(os.path.dirname(__file__), "settings_icon.png")
+        if os.path.exists(icon_path):
+            settings_button.setIcon(QIcon(icon_path))
+        else:
+            print(f"Файл иконки настроек {icon_path} не найден!")
         settings_button.setIconSize(QSize(16, 16))
         settings_button.setStyleSheet("""
             QPushButton {
