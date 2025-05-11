@@ -111,8 +111,47 @@ class ChatBotWindow(QMainWindow):
         top_bar_layout.addWidget(QLabel("Дом | Игры | Производительность | Smart Technology", 
                                        styleSheet="color: #AAAAAA; font-size: 14px; padding: 5px;"))
         top_bar_layout.addStretch()
-        top_bar_layout.addWidget(QLineEdit(placeholderText="Поиск", 
-                                          styleSheet="background-color: #333333 !important; color: #FFFFFF; width: 150px;"))
+
+        # Контейнер для поля поиска и лупы
+        search_widget = QWidget()
+        search_layout = QHBoxLayout(search_widget)
+        search_layout.setContentsMargins(0, 0, 0, 0)
+        search_layout.setSpacing(0)
+
+        # Поле поиска поменьше
+        self.search_field = QLineEdit()
+        self.search_field.setPlaceholderText("Поиск")
+        self.search_field.setStyleSheet("""
+            QLineEdit {
+                background-color: #333333 !important; 
+                color: #FFFFFF; 
+                width: 100px; 
+                padding: 5px; 
+                border: 1px solid #555555; 
+                border-radius: 4px 0 0 4px;
+            }
+        """)
+        search_layout.addWidget(self.search_field)
+
+        # Кнопка с лупой
+        search_button = QPushButton()
+        search_button.setIcon(QIcon("path/to/search_icon.png"))  # Замените на путь к иконке лупы (например, search_icon.png)
+        search_button.setIconSize(QSize(16, 16))
+        search_button.setStyleSheet("""
+            QPushButton {
+                background-color: #333333 !important; 
+                border: 1px solid #555555; 
+                border-left: none; 
+                border-radius: 0 4px 4px 0; 
+                padding: 5px;
+            }
+            QPushButton:hover {
+                background-color: #444444;
+            }
+        """)
+        search_layout.addWidget(search_button)
+
+        top_bar_layout.addWidget(search_widget)
 
         # Кнопка ★ с серой иконкой
         star_button = QPushButton()
