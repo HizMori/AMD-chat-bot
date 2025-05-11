@@ -5,8 +5,8 @@ import threading
 import markdown
 from PyQt6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
                              QTextBrowser, QLineEdit, QPushButton, QFrame, QLabel, QStatusBar)
-from PyQt6.QtCore import Qt, pyqtSignal, pyqtSlot
-from PyQt6.QtGui import QKeyEvent
+from PyQt6.QtCore import Qt, pyqtSignal, pyqtSlot, QSize
+from PyQt6.QtGui import QKeyEvent, QIcon
 
 class ChatBotWindow(QMainWindow):
     update_chat_signal = pyqtSignal(str)
@@ -17,6 +17,8 @@ class ChatBotWindow(QMainWindow):
         self.setWindowTitle("AMD ChatBot Support")
         self.setGeometry(100, 100, 800, 600)
 
+        # Убираем стандартный заголовок
+        self.setWindowFlags(Qt.WindowType.FramelessWindowHint)
         self.setStyleSheet("background-color: rgba(37, 37, 37, 200);")
 
         self.conversation_history = [
@@ -30,6 +32,77 @@ class ChatBotWindow(QMainWindow):
         self.setCentralWidget(central_widget)
         main_layout = QVBoxLayout(central_widget)
 
+        # Кастомная тёмная полоска с кнопками
+        title_bar = QFrame()
+        title_bar.setFixedHeight(30)
+        title_bar.setStyleSheet("background-color: #1E1E1E; border: none;")
+        self.title_bar = title_bar  # Сохраняем для перетаскивания
+        title_bar_layout = QHBoxLayout(title_bar)
+        title_bar_layout.setContentsMargins(5, 0, 5, 0)
+        title_bar_layout.setSpacing(0)
+
+        title_bar_layout.addStretch()  # Размещаем кнопки справа
+
+        # Кнопка сворачивания с эффектом наведения
+        minimize_button = QPushButton("-")
+        minimize_button.setStyleSheet("""
+            QPushButton {
+                background-color: #333333; 
+                color: #FFFFFF; 
+                font-size: 12px; 
+                padding: 2px 8px; 
+                border: none; 
+                border-radius: 3px;
+            }
+            QPushButton:hover {
+                background-color: #444444;
+            }
+        """)
+        minimize_button.setFixedSize(30, 20)
+        minimize_button.clicked.connect(self.showMinimized)
+        title_bar_layout.addWidget(minimize_button)
+
+        # Кнопка разворачивания/нормального режима с эффектом наведения
+        self.maximize_button = QPushButton("□")
+        self.maximize_button.setStyleSheet("""
+            QPushButton {
+                background-color: #333333; 
+                color: #FFFFFF; 
+                font-size: 12px; 
+                padding: 2px 8px; 
+                border: none; 
+                border-radius: 3px;
+            }
+            QPushButton:hover {
+                background-color: #444444;
+            }
+        """)
+        self.maximize_button.setFixedSize(30, 20)
+        self.maximize_button.clicked.connect(self.toggleMaximize)
+        title_bar_layout.addWidget(self.maximize_button)
+        
+        # Кнопка закрытия с эффектом наведения
+        close_button = QPushButton("✖")
+        close_button.setStyleSheet("""
+            QPushButton {
+                background-color: #D32F2F; 
+                color: #FFFFFF; 
+                font-size: 12px; 
+                padding: 2px 8px; 
+                border: none; 
+                border-radius: 3px;
+            }
+            QPushButton:hover {
+                background-color: #E04F4F;
+            }
+        """)
+        close_button.setFixedSize(30, 20)
+        close_button.clicked.connect(self.close)
+        title_bar_layout.addWidget(close_button)
+
+        main_layout.addWidget(title_bar)
+
+        # Существующая верхняя панель (top_bar) без крестика
         top_bar = QFrame()
         top_bar.setFixedHeight(50)
         top_bar.setStyleSheet("background-color: #1E1E1E !important; border-bottom: 1px solid #444;")
@@ -40,10 +113,55 @@ class ChatBotWindow(QMainWindow):
         top_bar_layout.addStretch()
         top_bar_layout.addWidget(QLineEdit(placeholderText="Поиск", 
                                           styleSheet="background-color: #333333 !important; color: #FFFFFF; width: 150px;"))
-        top_bar_layout.addWidget(QLabel("★", styleSheet="color: #AAAAAA; padding: 5px;"))
-        top_bar_layout.addWidget(QLabel("🔔", styleSheet="color: #AAAAAA; padding: 5px;"))
-        top_bar_layout.addWidget(QLabel("⚙️", styleSheet="color: #AAAAAA; padding: 5px;"))
-        top_bar_layout.addWidget(QLabel("❌", styleSheet="color: #D32F2F; padding: 5px;"))
+
+        # Кнопка ★ с серой иконкой
+        star_button = QPushButton()
+        star_button.setIcon(QIcon("path/to/star_icon.png"))  # Замените на путь к серой иконке звезды
+        star_button.setIconSize(QSize(16, 16))
+        star_button.setStyleSheet("""
+            QPushButton {
+                background-color: transparent; 
+                border: none; 
+                padding: 5px;
+            }
+            QPushButton:hover {
+                background-color: #333333;
+            }
+        """)
+        top_bar_layout.addWidget(star_button)
+
+        # Кнопка 🔔 с серой иконкой
+        bell_button = QPushButton()
+        bell_button.setIcon(QIcon("path/to/bell_icon.png"))  # Замените на путь к серой иконке колокольчика
+        bell_button.setIconSize(QSize(16, 16))
+        bell_button.setStyleSheet("""
+            QPushButton {
+                background-color: transparent; 
+                border: none; 
+                padding: 5px;
+            }
+            QPushButton:hover {
+                background-color: #333333;
+            }
+        """)
+        top_bar_layout.addWidget(bell_button)
+
+        # Кнопка ⚙️ с серой иконкой
+        settings_button = QPushButton()
+        settings_button.setIcon(QIcon("path/to/settings_icon.png"))  # Замените на путь к серой иконке настроек
+        settings_button.setIconSize(QSize(16, 16))
+        settings_button.setStyleSheet("""
+            QPushButton {
+                background-color: transparent; 
+                border: none; 
+                padding: 5px;
+            }
+            QPushButton:hover {
+                background-color: #333333;
+            }
+        """)
+        top_bar_layout.addWidget(settings_button)
+
         main_layout.addWidget(top_bar)
 
         chat_widget = QWidget()
@@ -54,7 +172,7 @@ class ChatBotWindow(QMainWindow):
 
         self.chat_area = QTextBrowser()
         self.chat_area.setReadOnly(True)
-        self.chat_area.setStyleSheet("background-color: #252525 !important; color: #FFFFFF; font-size: 14px; border: 1px solid #444444; a { color: #00B7EB; }")  # Голубой цвет ссылок
+        self.chat_area.setStyleSheet("background-color: #252525 !important; color: #FFFFFF; font-size: 14px; border: 1px solid #444444; a { color: #00B7EB; }")
         self.chat_area.setOpenExternalLinks(True)
         chat_layout.addWidget(self.chat_area)
 
@@ -78,6 +196,30 @@ class ChatBotWindow(QMainWindow):
         self.status_bar.setStyleSheet("color: #AAAAAA; background-color: #1E1E1E !important;")
         self.status_bar.showMessage("Подключено к DeepSeek API")
         self.setStatusBar(self.status_bar)
+
+    # Методы для перетаскивания окна
+    def mousePressEvent(self, event):
+        if event.button() == Qt.MouseButton.LeftButton and self.title_bar.geometry().contains(event.pos()):
+            self.drag_position = event.globalPosition().toPoint() - self.frameGeometry().topLeft()
+            event.accept()
+
+    def mouseMoveEvent(self, event):
+        if hasattr(self, 'drag_position') and event.buttons() == Qt.MouseButton.LeftButton:
+            self.move(event.globalPosition().toPoint() - self.drag_position)
+            event.accept()
+
+    def mouseReleaseEvent(self, event):
+        if hasattr(self, 'drag_position'):
+            del self.drag_position
+
+    # Метод для переключения между максимальным и нормальным режимами
+    def toggleMaximize(self):
+        if self.isMaximized():
+            self.showNormal()
+            self.maximize_button.setText("□")
+        else:
+            self.showMaximized()
+            self.maximize_button.setText("🗖")
 
     @pyqtSlot(str)
     def update_chat_area(self, text):
