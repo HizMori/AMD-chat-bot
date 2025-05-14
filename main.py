@@ -104,6 +104,10 @@ class ChatBotWindow(QMainWindow):
             {"role": "system", "content": "Вы — технический помощник AMD. Отвечайте на вопросы о продуктах Ryzen и Radeon. Если нужно предоставить ссылку, используйте Markdown-формат, например [AMD](https://www.amd.com)."}
         ]
 
+        # История отправленных сообщений
+        self.message_history = []
+        self.history_index = -1
+
         self.update_chat_signal.connect(self.update_chat_area)
         self.update_status_signal.connect(self.update_status_bar)
 
@@ -183,13 +187,11 @@ class ChatBotWindow(QMainWindow):
         top_bar_layout = QHBoxLayout(top_bar)
         top_bar_layout.addWidget(QLabel("AMD", styleSheet="color: #D32F2F; font-size: 18px; font-weight: bold; padding: 5px;"))
         
-        # Создаём контейнер для кнопок
         button_container = QWidget()
         button_layout = QHBoxLayout(button_container)
         button_layout.setContentsMargins(0, 0, 0, 0)
         button_layout.setSpacing(10)
 
-        # Список кнопок
         self.buttons = []
         button_texts = ["Дом", "Игры", "Производительность", "Smart Technology", "ИИ-помощник"]
         for i, text in enumerate(button_texts):
@@ -330,12 +332,10 @@ class ChatBotWindow(QMainWindow):
 
         main_layout.addWidget(top_bar)
 
-        # Добавляем QStackedWidget для переключения экранов (перемещено сюда)
         self.stacked_widget = QStackedWidget()
         self.create_screens()
         main_layout.addWidget(self.stacked_widget)
 
-        # Устанавливаем первую кнопку активной по умолчанию (после создания stacked_widget)
         self.set_active_screen(0)
 
         self.status_bar = QStatusBar()
@@ -344,31 +344,26 @@ class ChatBotWindow(QMainWindow):
         self.setStatusBar(self.status_bar)
 
     def create_screens(self):
-        # Экран для "Дом"
         home_screen = QWidget()
         home_layout = QVBoxLayout(home_screen)
         home_layout.addWidget(QLabel("Содержимое для Дом", styleSheet="color: #FFFFFF; font-size: 16px; padding: 20px;"))
         self.stacked_widget.addWidget(home_screen)
 
-        # Экран для "Игры"
         games_screen = QWidget()
         games_layout = QVBoxLayout(games_screen)
         games_layout.addWidget(QLabel("Содержимое для Игры", styleSheet="color: #FFFFFF; font-size: 16px; padding: 20px;"))
         self.stacked_widget.addWidget(games_screen)
 
-        # Экран для "Производительность"
         performance_screen = QWidget()
         performance_layout = QVBoxLayout(performance_screen)
         performance_layout.addWidget(QLabel("Содержимое для Производительность", styleSheet="color: #FFFFFF; font-size: 16px; padding: 20px;"))
         self.stacked_widget.addWidget(performance_screen)
 
-        # Экран для "Smart Technology"
         tech_screen = QWidget()
         tech_layout = QVBoxLayout(tech_screen)
         tech_layout.addWidget(QLabel("Содержимое для Smart Technology", styleSheet="color: #FFFFFF; font-size: 16px; padding: 20px;"))
         self.stacked_widget.addWidget(tech_screen)
 
-        # Экран для "ИИ-помощник" с чат-ботом
         self.chat_widget = QWidget()
         chat_layout = QVBoxLayout(self.chat_widget)
 
@@ -572,6 +567,10 @@ class ChatBotWindow(QMainWindow):
         if not message:
             return
 
+        # Сохраняем сообщение в историю
+        self.message_history.append(message)
+        self.history_index = len(self.message_history)
+
         self.update_chat_signal.emit(f"<b>Вы:</b> {message}")
         self.input_field.clear()
         self.update_status_signal.emit("Отправка запроса...")
@@ -587,6 +586,9 @@ class ChatBotWindow(QMainWindow):
         self.conversation_history = [
             {"role": "system", "content": "Вы — технический помощник AMD. Отвечайте на вопросы о продуктах Ryzen и Radeon. Если нужно предоставить ссылку, используйте Markdown-формат, например [AMD](https://www.amd.com)."}
         ]
+        # Очищаем историю сообщений при очистке чата
+        self.message_history = []
+        self.history_index = -1
         notification = NotificationWindow("Чат успешно очищен!", self)
         notification.move(self.geometry().center() - notification.rect().center())
         notification.exec()
@@ -666,6 +668,27 @@ class ChatBotWindow(QMainWindow):
             print(f"Exception occurred: {str(e)}")
             self.update_chat_signal.emit(f"<b>Ошибка:</b> {str(e)}")
             self.update_status_signal.emit("Ошибка подключения")
+
+    def keyPressEvent(self, event):
+        """Обработка нажатия клавиш для истории сообщений"""
+        if event.key() == Qt.Key.Key_Up and self.stacked_widget.currentIndex() == 4:  # Проверяем, что на экране чат
+            if not self.message_history:
+                return
+            self.history_index = max(-1, self.history_index - 1)
+            if 0 <= self.history_index < len(self.message_history):
+                self.input_field.setText(self.message_history[self.history_index])
+            event.accept()
+        elif event.key() == Qt.Key.Key_Down and self.stacked_widget.currentIndex() == 4:  # Поддержка стрелки вниз
+            if not self.message_history:
+                return
+            self.history_index = min(len(self.message_history), self.history_index + 1)
+            if self.history_index == len(self.message_history):
+                self.input_field.clear()
+            else:
+                self.input_field.setText(self.message_history[self.history_index])
+            event.accept()
+        else:
+            super().keyPressEvent(event)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
