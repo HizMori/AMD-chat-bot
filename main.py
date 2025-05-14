@@ -10,17 +10,6 @@ from PyQt6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, QH
 from PyQt6.QtCore import Qt, pyqtSignal, pyqtSlot, QSize, QDir, QPoint, QTimer, QRect
 from PyQt6.QtGui import QKeyEvent, QIcon, QCursor, QScreen
 
-# Функция для получения пути к ресурсам
-def resource_path(relative_path):
-    """Возвращает правильный путь к ресурсу, работает как в режиме разработки, так и в .exe"""
-    if getattr(sys, 'frozen', False):
-        # Если запущено из .exe, используем sys._MEIPASS
-        base_path = sys._MEIPASS
-    else:
-        # Если запущено из скрипта, используем путь к текущему файлу
-        base_path = os.path.dirname(__file__)
-    return os.path.join(base_path, relative_path)
-
 class NotificationWindow(QDialog):
     def __init__(self, message, parent=None):
         super().__init__(parent)
@@ -95,8 +84,7 @@ class ChatBotWindow(QMainWindow):
         self.setWindowTitle("AMD ChatBot Support")
         self.setGeometry(100, 100, 800, 600)
 
-        # Используем resource_path для загрузки иконки приложения
-        icon_path = resource_path("path/to/app_icon.ico")
+        icon_path = os.path.join(os.path.dirname(__file__), "app_icon.ico")
         if os.path.exists(icon_path):
             self.setWindowIcon(QIcon(icon_path))
         else:
@@ -246,12 +234,11 @@ class ChatBotWindow(QMainWindow):
         search_layout.addWidget(self.search_field)
 
         search_button = QPushButton()
-        # Используем resource_path для загрузки иконки поиска
-        search_icon_path = resource_path("path/to/search_icon.png")
-        if os.path.exists(search_icon_path):
-            search_button.setIcon(QIcon(search_icon_path))
+        icon_path = os.path.join(os.path.dirname(__file__), "search_icon.png")
+        if os.path.exists(icon_path):
+            search_button.setIcon(QIcon(icon_path))
         else:
-            print(f"Файл иконки лупы {search_icon_path} не найден!")
+            print(f"Файл иконки лупы {icon_path} не найден!")
         search_button.setIconSize(QSize(16, 16))
         search_button.setStyleSheet("""
             QPushButton {
@@ -270,12 +257,11 @@ class ChatBotWindow(QMainWindow):
         top_bar_layout.addWidget(search_widget)
 
         star_button = QPushButton()
-        # Используем resource_path для загрузки иконки звезды
-        star_icon_path = resource_path("path/to/star_icon.png")
-        if os.path.exists(star_icon_path):
-            star_button.setIcon(QIcon(star_icon_path))
+        icon_path = os.path.join(os.path.dirname(__file__), "star_icon.png")
+        if os.path.exists(icon_path):
+            star_button.setIcon(QIcon(icon_path))
         else:
-            print(f"Файл иконки звезды {star_icon_path} не найден!")
+            print(f"Файл иконки звезды {icon_path} не найден!")
         star_button.setIconSize(QSize(16, 16))
         star_button.setStyleSheet("""
             QPushButton {
@@ -290,12 +276,11 @@ class ChatBotWindow(QMainWindow):
         top_bar_layout.addWidget(star_button)
 
         bell_button = QPushButton()
-        # Используем resource_path для загрузки иконки колокольчика
-        bell_icon_path = resource_path("path/to/bell_icon.png")
-        if os.path.exists(bell_icon_path):
-            bell_button.setIcon(QIcon(bell_icon_path))
+        icon_path = os.path.join(os.path.dirname(__file__), "bell_icon.png")
+        if os.path.exists(icon_path):
+            bell_button.setIcon(QIcon(icon_path))
         else:
-            print(f"Файл иконки колокольчика {bell_icon_path} не найден!")
+            print(f"Файл иконки колокольчика {icon_path} не найден!")
         bell_button.setIconSize(QSize(16, 16))
         bell_button.setStyleSheet("""
             QPushButton {
@@ -310,12 +295,11 @@ class ChatBotWindow(QMainWindow):
         top_bar_layout.addWidget(bell_button)
 
         self.settings_button = QPushButton()
-        # Используем resource_path для загрузки иконки настроек
-        settings_icon_path = resource_path("path/to/settings_icon.png")
-        if os.path.exists(settings_icon_path):
-            self.settings_button.setIcon(QIcon(settings_icon_path))
+        icon_path = os.path.join(os.path.dirname(__file__), "settings_icon.png")
+        if os.path.exists(icon_path):
+            self.settings_button.setIcon(QIcon(icon_path))
         else:
-            print(f"Файл иконки настроек {settings_icon_path} не найден!")
+            print(f"Файл иконки настроек {icon_path} не найден!")
         self.settings_button.setIconSize(QSize(16, 16))
         self.settings_button.setStyleSheet("""
             QPushButton {
@@ -346,12 +330,12 @@ class ChatBotWindow(QMainWindow):
 
         main_layout.addWidget(top_bar)
 
-        # Добавляем QStackedWidget для переключения экранов
+        # Добавляем QStackedWidget для переключения экранов (перемещено сюда)
         self.stacked_widget = QStackedWidget()
         self.create_screens()
         main_layout.addWidget(self.stacked_widget)
 
-        # Устанавливаем первую кнопку активной по умолчанию
+        # Устанавливаем первую кнопку активной по умолчанию (после создания stacked_widget)
         self.set_active_screen(0)
 
         self.status_bar = QStatusBar()
@@ -646,7 +630,7 @@ class ChatBotWindow(QMainWindow):
 
         url = "https://openrouter.ai/api/v1/chat/completions"
         headers = {
-            "Authorization": "Bearer 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",
+            "Authorization": "Bearer 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",
             "Content-Type": "application/json",
             "X-Title": "AMD ChatBot Support"
         }
