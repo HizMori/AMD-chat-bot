@@ -6,7 +6,7 @@ import markdown
 import os
 from PyQt6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
                              QTextBrowser, QLineEdit, QPushButton, QFrame, QLabel, QStatusBar,
-                             QFileDialog, QMenu, QDialog)
+                             QFileDialog, QMenu, QDialog, QStackedWidget)
 from PyQt6.QtCore import Qt, pyqtSignal, pyqtSlot, QSize, QDir, QPoint, QTimer, QRect
 from PyQt6.QtGui import QKeyEvent, QIcon, QCursor, QScreen
 
@@ -179,11 +179,39 @@ class ChatBotWindow(QMainWindow):
 
         top_bar = QFrame()
         top_bar.setFixedHeight(50)
-        top_bar.setStyleSheet("background-color: #1E1E1E !important; border-bottom: 1px solid #444;")
+        top_bar.setStyleSheet("background-color: #1E1E1E !important;")
         top_bar_layout = QHBoxLayout(top_bar)
         top_bar_layout.addWidget(QLabel("AMD", styleSheet="color: #D32F2F; font-size: 18px; font-weight: bold; padding: 5px;"))
-        top_bar_layout.addWidget(QLabel("Дом | Игры | Производительность | Smart Technology", 
-                                       styleSheet="color: #AAAAAA; font-size: 14px; padding: 5px;"))
+        
+        # Создаём контейнер для кнопок
+        button_container = QWidget()
+        button_layout = QHBoxLayout(button_container)
+        button_layout.setContentsMargins(0, 0, 0, 0)
+        button_layout.setSpacing(10)
+
+        # Список кнопок
+        self.buttons = []
+        button_texts = ["Дом", "Игры", "Производительность", "Smart Technology", "ИИ-помощник"]
+        for i, text in enumerate(button_texts):
+            button = QPushButton(text)
+            button.setStyleSheet("""
+                QPushButton {
+                    background-color: transparent;
+                    color: #AAAAAA;
+                    font-size: 14px;
+                    padding: 5px 10px;
+                    border: none;
+                    text-align: left;
+                }
+                QPushButton:hover {
+                    background-color: #333333;
+                }
+            """)
+            button.clicked.connect(lambda checked, idx=i: self.set_active_screen(idx))
+            button_layout.addWidget(button)
+            self.buttons.append(button)
+
+        top_bar_layout.addWidget(button_container)
         top_bar_layout.addStretch()
 
         search_widget = QWidget()
@@ -283,17 +311,16 @@ class ChatBotWindow(QMainWindow):
                 background-color: #333333;
             }
         """)
-        # Создаём контекстное меню и задаём стиль
         self.settings_menu = QMenu(self)
         self.settings_menu.setStyleSheet("""
             QMenu {
                 background-color: #1E1E1E;
-                color: #AAAAAA;  /* Серый цвет текста */
+                color: #AAAAAA;
                 border: 1px solid #444444;
             }
             QMenu::item:selected {
                 background-color: #333333;
-                color: #FFFFFF;  /* Цвет текста при выборе */
+                color: #FFFFFF;
             }
         """)
         self.settings_menu.addAction("Очистить чат", self.clear_chat)
@@ -303,8 +330,47 @@ class ChatBotWindow(QMainWindow):
 
         main_layout.addWidget(top_bar)
 
-        chat_widget = QWidget()
-        chat_layout = QVBoxLayout(chat_widget)
+        # Добавляем QStackedWidget для переключения экранов (перемещено сюда)
+        self.stacked_widget = QStackedWidget()
+        self.create_screens()
+        main_layout.addWidget(self.stacked_widget)
+
+        # Устанавливаем первую кнопку активной по умолчанию (после создания stacked_widget)
+        self.set_active_screen(0)
+
+        self.status_bar = QStatusBar()
+        self.status_bar.setStyleSheet("color: #AAAAAA; background-color: #1E1E1E !important;")
+        self.status_bar.showMessage("Подключено к DeepSeek API")
+        self.setStatusBar(self.status_bar)
+
+    def create_screens(self):
+        # Экран для "Дом"
+        home_screen = QWidget()
+        home_layout = QVBoxLayout(home_screen)
+        home_layout.addWidget(QLabel("Содержимое для Дом", styleSheet="color: #FFFFFF; font-size: 16px; padding: 20px;"))
+        self.stacked_widget.addWidget(home_screen)
+
+        # Экран для "Игры"
+        games_screen = QWidget()
+        games_layout = QVBoxLayout(games_screen)
+        games_layout.addWidget(QLabel("Содержимое для Игры", styleSheet="color: #FFFFFF; font-size: 16px; padding: 20px;"))
+        self.stacked_widget.addWidget(games_screen)
+
+        # Экран для "Производительность"
+        performance_screen = QWidget()
+        performance_layout = QVBoxLayout(performance_screen)
+        performance_layout.addWidget(QLabel("Содержимое для Производительность", styleSheet="color: #FFFFFF; font-size: 16px; padding: 20px;"))
+        self.stacked_widget.addWidget(performance_screen)
+
+        # Экран для "Smart Technology"
+        tech_screen = QWidget()
+        tech_layout = QVBoxLayout(tech_screen)
+        tech_layout.addWidget(QLabel("Содержимое для Smart Technology", styleSheet="color: #FFFFFF; font-size: 16px; padding: 20px;"))
+        self.stacked_widget.addWidget(tech_screen)
+
+        # Экран для "ИИ-помощник" с чат-ботом
+        self.chat_widget = QWidget()
+        chat_layout = QVBoxLayout(self.chat_widget)
 
         chat_layout.addWidget(QLabel("Чат с поддержкой AMD", 
                                     styleSheet="color: #AAAAAA; font-size: 16px; padding: 10px; background-color: #252525 !important;"))
@@ -329,12 +395,40 @@ class ChatBotWindow(QMainWindow):
         input_widget.setLayout(input_layout)
         chat_layout.addWidget(input_widget)
 
-        main_layout.addWidget(chat_widget)
+        self.stacked_widget.addWidget(self.chat_widget)
 
-        self.status_bar = QStatusBar()
-        self.status_bar.setStyleSheet("color: #AAAAAA; background-color: #1E1E1E !important;")
-        self.status_bar.showMessage("Подключено к DeepSeek API")
-        self.setStatusBar(self.status_bar)
+    def set_active_screen(self, index):
+        for i, button in enumerate(self.buttons):
+            if i == index:
+                button.setStyleSheet("""
+                    QPushButton {
+                        background-color: transparent;
+                        color: #FFFFFF;
+                        font-size: 14px;
+                        padding: 5px 10px;
+                        border: none;
+                        text-align: left;
+                        border-bottom: 2px solid #D32F2F;
+                    }
+                    QPushButton:hover {
+                        background-color: #333333;
+                    }
+                """)
+            else:
+                button.setStyleSheet("""
+                    QPushButton {
+                        background-color: transparent;
+                        color: #AAAAAA;
+                        font-size: 14px;
+                        padding: 5px 10px;
+                        border: none;
+                        text-align: left;
+                    }
+                    QPushButton:hover {
+                        background-color: #333333;
+                    }
+                """)
+        self.stacked_widget.setCurrentIndex(index)
 
     def get_resize_region(self, pos):
         rect = self.rect()
