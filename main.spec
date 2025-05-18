@@ -5,7 +5,7 @@ a = Analysis(
     ['main.py'],
     pathex=[],
     binaries=[],
-    datas=[('path/to/app_icon.ico', 'path/to'), ('path/to/search_icon.png', 'path/to'), ('path/to/star_icon.png', 'path/to'), ('path/to/bell_icon.png', 'path/to'), ('path/to/settings_icon.png', 'path/to')],
+    datas=[('path/to/app_icon.ico', '.'), ('path/to/app_icon.png', '.'), ('path/to/bell_icon.png', '.'), ('path/to/search_icon.png', '.'), ('path/to/settings_icon.png', '.'), ('path/to/star_icon.png', '.')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
@@ -35,5 +35,4 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon=['path\\to\\app_icon.ico'],
 )
