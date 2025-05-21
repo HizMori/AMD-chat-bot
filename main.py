@@ -722,7 +722,7 @@ class ChatBotWindow(QMainWindow):
         print(f"Conversation history: {self.conversation_history}")
         url = "https://openrouter.ai/api/v1/chat/completions"
         headers = {
-            "Authorization": "Bearer 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",
+            "Authorization": "Bearer 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",
             "Content-Type": "application/json",
             "X-Title": "AMD ChatBot Support"
         }
